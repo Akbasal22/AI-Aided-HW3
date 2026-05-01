@@ -5,16 +5,14 @@ CHUNK_SIZE_WORDS = 2000
 CHUNK_OVERLAP_WORDS = 200
 
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
-CLASSIFIER_MODEL = "valhalla/distilbart-mnli-12-3"
+CLASSIFIER_LLM = "gemma3:1b"
 LLM_MODEL = "llama3.2:3b"
 OLLAMA_BASE_URL = "http://localhost:11434"
 
 PEOPLE_COLLECTION = "people_store"
 PLACES_COLLECTION = "places_store"
 
-TOP_K = 5
-CLASSIFIER_LABELS = ["person", "place"]
-CLASSIFIER_MARGIN = 0.15
+TOP_K = 3
 
 PEOPLE_TITLES = [
     "Albert Einstein",

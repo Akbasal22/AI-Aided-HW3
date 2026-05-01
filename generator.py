@@ -6,7 +6,7 @@ from prompts import RAG_PROMPT
 
 _llm: OllamaLLM | None = None
 
-MAX_CONTEXT_WORDS = 6000
+MAX_CONTEXT_WORDS = 1500
 
 
 def load_llm() -> OllamaLLM:
@@ -36,6 +36,7 @@ def format_context(docs: list[Document]) -> str:
 
 
 def answer(query: str, docs: list[Document]) -> str:
+
     if not docs:
         return "I don't have enough information to answer that based on the available data."
 

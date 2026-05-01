@@ -1,22 +1,26 @@
 import sqlite3
 
+import requests
+
 import config
 import db
 
-_classifier_pipeline = None
 _people_names: set[str] = set()
 _places_names: set[str] = set()
 
+FEW_SHOT_PROMPT = """\
+Classify the question below. Reply with exactly one word: person, place, both, or irrelevant.
 
-def load_classifier():
-    global _classifier_pipeline
-    if _classifier_pipeline is None:
-        from transformers import pipeline
-        _classifier_pipeline = pipeline(
-            "zero-shot-classification",
-            model=config.CLASSIFIER_MODEL,
-        )
-    return _classifier_pipeline
+Q: What did Marie Curie discover?            A: person
+Q: Where is the Eiffel Tower located?        A: place
+Q: Who built the Hagia Sophia and when?      A: place
+Q: Compare Messi and Ronaldo                 A: both
+Q: Tell me about Einstein and the Taj Mahal  A: both
+Q: Who is the president of Mars?             A: irrelevant
+Q: What is 2 + 2?                            A: irrelevant
+
+Q: {query}
+A:"""
 
 
 def build_keyword_lists(conn: sqlite3.Connection) -> None:
@@ -39,22 +43,28 @@ def keyword_prefilter(query: str) -> str | None:
     return None
 
 
-def bert_classify(query: str) -> str:
-    clf = load_classifier()
-    result = clf(query, candidate_labels=config.CLASSIFIER_LABELS)
-
-    scores = dict(zip(result["labels"], result["scores"]))
-    person_score = scores.get("person", 0.0)
-    place_score = scores.get("place", 0.0)
-
-    # If the two labels are close, treat as ambiguous → "both"
-    if abs(person_score - place_score) < config.CLASSIFIER_MARGIN:
+def ollama_classify(query: str) -> str:
+    prompt = FEW_SHOT_PROMPT.format(query=query)
+    try:
+        resp = requests.post(
+            f"{config.OLLAMA_BASE_URL}/api/generate",
+            json={"model": config.CLASSIFIER_LLM, "prompt": prompt, "stream": False},
+            timeout=15,
+        )
+        resp.raise_for_status()
+        raw = resp.json().get("response", "").strip().lower()
+        first_word = raw.split()[0].strip(".,!?") if raw else ""
+        if first_word in ("person", "place", "both"):
+            return first_word
+        if first_word == "irrelevant":
+            return "both"
         return "both"
-    return result["labels"][0]
+    except Exception:
+        return "both"
 
 
 def classify_query(query: str) -> str:
     fast = keyword_prefilter(query)
     if fast is not None:
         return fast
-    return bert_classify(query)
+    return ollama_classify(query)

@@ -115,7 +115,7 @@ Ollama LLM (llama3.2:3b) → Answer
 All data is stored locally:
 - `wiki_rag.db` — SQLite database with raw article text and chunk metadata
 - `./chroma_store/` — ChromaDB persistent vector store
-
+/i
 ---
 
 ## Example Failure Cases

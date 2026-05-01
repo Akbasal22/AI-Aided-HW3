@@ -1,5 +1,6 @@
 import re
 import sqlite3
+import time
 
 import requests
 from bs4 import BeautifulSoup
@@ -86,6 +87,7 @@ def ingest_bulk(
             ids.append(aid)
             if was_fetched:
                 fetched += 1
+                time.sleep(2)
             else:
                 skipped += 1
         except Exception as exc:
