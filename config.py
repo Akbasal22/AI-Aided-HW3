@@ -35,6 +35,7 @@ PEOPLE_TITLES = [
     "Elon Musk",
     "Aristotle",
     "Wolfgang Amadeus Mozart",
+    "Adolf Hitler"
 ]
 
 PLACES_TITLES = [
